@@ -1,0 +1,6 @@
+{
+  "name": "Rukunin",
+  "description": "Sistem RT Digital lengkap dengan fitur admin untuk mengelola kependudukan, keuangan kas & iuran, pengumuman, layanan surat perizinan, polling warga, kontak darurat, inventaris, dan ronda keamanan secara mudah & transparan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
