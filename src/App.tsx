@@ -563,12 +563,46 @@ export default function App() {
       </div>
 
       {roleMode === 'warga' ? (
-        /* 2. RENDER THE MARKETING LANDING PAGE */
+        /* 2. RENDER THE MARKETING LANDING PAGE WITH DIGITAL SIMULATION PORTAL SUPPORT */
         <LandingPage 
           onEnterApp={() => { 
             setRoleMode('admin'); 
             setCurrentView('dashboard'); 
           }} 
+          citizens={citizens}
+          announcements={announcements}
+          events={events}
+          polls={polls}
+          onVotePoll={handleVotePoll}
+          suggestions={suggestions}
+          onSubmitSuggestion={(newSuggestion) => {
+            const suggestion = {
+              ...newSuggestion,
+              id: 's-' + Date.now(),
+              date: new Date().toISOString().split('T')[0],
+              status: 'Belum Dibaca' as const
+            };
+            setSuggestions(prev => [suggestion, ...prev]);
+          }}
+          iurans={iurans}
+          onUpdateIuran={handleUpdateIuran}
+          onCreateLetterRequest={(type, purpose, applicant) => {
+            setLetters(prev => [
+              {
+                id: 'l-' + Date.now(),
+                applicantId: applicant.id,
+                applicantName: applicant.name,
+                applicantGender: applicant.gender,
+                applicantAddress: `Blok ${applicant.block} No. ${applicant.houseNumber}, RT 04`,
+                letterType: type as any,
+                purpose: purpose,
+                submittedDate: new Date().toISOString().split('T')[0],
+                status: 'Menunggu'
+              },
+              ...prev
+            ]);
+          }}
+          letters={letters}
         />
       ) : (
         /* 3. RENDER THE COMPREHENSIVE ADMIN BACK-OFFICE PLATFORM (Responsive Sidebar & Content Layout) */
