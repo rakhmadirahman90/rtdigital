@@ -685,6 +685,115 @@ export default function LandingPage({
             </button>
           </div>
 
+          {/* INTERACTIVE PLAYBOOK: CHOOSE A QUICK SCENARIO TO TEST FUNCTIONALITY COMFORTABLY */}
+          <div className="bg-white border border-slate-205 rounded-3xl p-6 mb-8 shadow-xs text-left relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
+            <div className="flex items-center space-x-2.5 mb-4">
+              <span className="p-1.5 bg-emerald-50 text-emerald-700 rounded-lg shrink-0">
+                <Sparkles className="w-5 h-5 text-emerald-650 animate-pulse" />
+              </span>
+              <div>
+                <h3 className="font-display font-black text-slate-900 text-sm sm:text-base flex items-center gap-1.5">
+                  🎯 Skenario Simulasi Sekali Klik (Click-to-Test Playbook)
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                  Uji coba alur kerja Rukunin secara instan. Tekan salah satu tombol skenario di bawah untuk mengisi data simulasi dan meninjau hasilnya di Admin Dashboard!
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              {/* Scenario 1 */}
+              <div className="bg-emerald-50/55 border border-emerald-100 hover:border-emerald-250 rounded-2xl p-4 flex flex-col justify-between transition-all">
+                <div className="space-y-1.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold">1</span>
+                    <span className="font-bold text-xs text-emerald-950 font-display">Minta Surat Pengantar</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed pb-3">
+                    Mengirimkan berkas pengajuan surat domisili atas nama warga aktif: <strong>{simulatedCitizen.name}</strong> untuk keperluan paspor.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCreateLetterRequest('Surat Pengantar Domisili', 'Pengurusan pembuatan berkas paspor & keperluan imigrasi dinas', simulatedCitizen);
+                    triggerAlert(
+                      "Skenario 1 Berhasil Diajukan!",
+                      `Mengajukan Surat Pengantar Domisili atas nama: ${simulatedCitizen.name}. Silakan klik tombol 'Buka Menu Pengurus (Admin RT)' lalu buka menu 'Layanan Warga' untuk menandatangani / menerbitkan surat ini!`
+                    );
+                  }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-550 text-white font-bold py-2 rounded-xl text-[11px] transition shadow-xs cursor-pointer font-display"
+                >
+                  Ajukan Surat Pengantar ✈️
+                </button>
+              </div>
+
+              {/* Scenario 2 */}
+              <div className="bg-indigo-50/55 border border-indigo-100 hover:border-indigo-250 rounded-2xl p-4 flex flex-col justify-between transition-all">
+                <div className="space-y-1.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-850 flex items-center justify-center text-[10px] font-bold">2</span>
+                    <span className="font-bold text-xs text-indigo-950 font-display">Salurkan Suara Polling</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed pb-3">
+                    Menyumbangkan hak suara warga <strong>{simulatedCitizen.name}</strong> pada polling warna cat baru balai warga ke opsi modern.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const activePoll = polls.find(p => p.id === 'p1');
+                    if (activePoll && activePoll.votedUserIds.includes(simulatedCitizen.id)) {
+                      triggerAlert(
+                        "Info Suara Polling!",
+                        `Profil warga ${simulatedCitizen.name} sudah menyumbangkan suara di sistem. Anda bisa memilih profil warga lain di panel kiri lalu klik lagi tombol ini untuk simulasi!`,
+                        "info"
+                      );
+                    } else {
+                      handleVote('p1', 'po2');
+                    }
+                  }}
+                  className="w-full bg-indigo-600 hover:bg-indigo-550 text-white font-bold py-2 rounded-xl text-[11px] transition shadow-xs cursor-pointer font-display"
+                >
+                  Sumbang Hak Suara 🗳️
+                </button>
+              </div>
+
+              {/* Scenario 3 */}
+              <div className="bg-amber-50/55 border border-amber-100 hover:border-amber-255 rounded-2xl p-4 flex flex-col justify-between transition-all">
+                <div className="space-y-1.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-850 flex items-center justify-center text-[10px] font-bold">3</span>
+                    <span className="font-bold text-xs text-amber-950 font-display">Aspirasi "Cermin Tikungan"</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed pb-3">
+                    Melayangkan usulan warga mengenai cermin cembung pengaman berkendara langsung ke database mading pengurus RT.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSubmitSuggestion({
+                      senderName: simulatedCitizen.name,
+                      senderContact: simulatedCitizen.phone || '0812-xxxx-xxxx',
+                      content: "Mohon dipasang cermin cembung tikungan di pertigaan gang sb-2, karena sering terjadi blindspot berbahaya di tikungan tersebut."
+                    });
+                    triggerAlert(
+                      "Skenario 3 Berhasil Disalurkan!",
+                      `Aspirasi cermin tikungan atas nama ${simulatedCitizen.name} sukses dikirim. Beralih ke Admin RT -> menu 'Aspirasi & Saran' untuk mereview & membalas usulan ini!`
+                    );
+                  }}
+                  className="w-full bg-amber-600 hover:bg-amber-550 text-white font-bold py-2 rounded-xl text-[11px] transition shadow-xs cursor-pointer font-display"
+                >
+                  Kirim Usul Aspirasi 🔮
+                </button>
+              </div>
+
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             
             {/* LEFT BAR COLLAPSIBLE PANEL: SELECT THE ACTIVE CITIZEN PROFILE */}
