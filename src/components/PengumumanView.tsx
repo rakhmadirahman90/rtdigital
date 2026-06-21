@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Megaphone, Plus, Calendar, Trash2, Pin, Globe, AlertTriangle, ShieldAlert, FileText, Check } from 'lucide-react';
 import { Announcement } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface PengumumanProps {
   announcements: Announcement[];
@@ -23,7 +24,7 @@ export default function PengumumanView({
     title: '',
     content: '',
     category: 'umum' as 'umum' | 'darurat' | 'kegiatan' | 'pembangunan',
-    author: 'Pak RT Fauzan',
+    author: RTRW_CONTEXT.KETUA_RT_01,
     isPinned: false
   });
 
@@ -44,7 +45,7 @@ export default function PengumumanView({
       title: '',
       content: '',
       category: 'umum',
-      author: 'Pak RT Fauzan',
+      author: RTRW_CONTEXT.KETUA_RT_01,
       isPinned: false
     });
     setShowAddForm(false);
@@ -58,7 +59,7 @@ export default function PengumumanView({
             <span className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
               <Megaphone className="w-5 h-5" />
             </span>
-            Papan Pengumuman Digital RT 04
+            Papan Pengumuman Digital RT {RTRW_CONTEXT.RT_PRIMARY}
           </h1>
           <p className="text-slate-500 text-xs mt-1">
             Siarkan maklumat penting, edaran kelurahan, jadwal iuran, serta peringatan darurat dwi-arah kepada seluruh warga.
@@ -126,7 +127,7 @@ export default function PengumumanView({
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Pak RT Fauzan"
+                  placeholder={`Contoh: ${RTRW_CONTEXT.KETUA_RT_01}`}
                   value={form.author}
                   onChange={(e) => setForm(prev => ({ ...prev, author: e.target.value }))}
                   className="w-full px-3.5 py-2 border border-slate-220 rounded-lg text-sm bg-white"
@@ -192,7 +193,7 @@ export default function PengumumanView({
               }`}
             >
               {ann.isPinned && (
-                <span className="absolute -top-2.5 left-5 bg-emerald-650 text-white text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center font-display shadow-sm">
+                <span className="absolute -top-2.5 left-5 bg-emerald-600 text-white text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center font-display shadow-sm">
                   <Pin className="w-3 h-3 mr-1 fill-white" />
                   PINNED INFO
                 </span>
@@ -201,10 +202,10 @@ export default function PengumumanView({
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-100 mt-2">
                   <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                    ann.category === 'darurat' ? 'bg-red-50 text-red-750 font-bold border border-red-200' :
-                    ann.category === 'kegiatan' ? 'bg-green-50 text-green-755 font-bold border border-green-200' :
-                    ann.category === 'pembangunan' ? 'bg-indigo-50 text-indigo-755 border border-indigo-205' :
-                    'bg-slate-100 text-slate-700 border border-slate-150'
+                    ann.category === 'darurat' ? 'bg-red-50 text-red-700 font-bold border border-red-200' :
+                    ann.category === 'kegiatan' ? 'bg-green-50 text-green-700 font-bold border border-green-200' :
+                    ann.category === 'pembangunan' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                    'bg-slate-100 text-slate-700 border border-slate-200'
                   }`}>
                     {ann.category}
                   </span>
@@ -223,18 +224,18 @@ export default function PengumumanView({
                   {ann.category === 'darurat' && (
                     <div className="bg-red-50 border border-red-200 text-red-800 text-[11px] p-2 rounded-lg flex items-start gap-1.5 font-medium">
                       <ShieldAlert className="w-4 h-4 text-red-600 shrink-0 mt-0.5 animate-bounce" />
-                      <span>PERHATIAN KHUSUS: Diharapkan seluruh warga RT 04 membaca maklumat darurat ini demi keselamatan lingkungan.</span>
+                      <span>PERHATIAN KHUSUS: Diharapkan seluruh warga RT {RTRW_CONTEXT.RT_PRIMARY} membaca maklumat darurat ini demi keselamatan lingkungan.</span>
                     </div>
                   )}
 
-                  <p className="text-slate-650 text-xs sm:text-xs leading-relaxed font-sans line-clamp-6">
+                  <p className="text-slate-600 text-xs sm:text-xs leading-relaxed font-sans line-clamp-6">
                     {ann.content}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-450 select-none">
-                <span className="font-semibold block text-slate-500">Penulis: <span className="text-slate-705 font-bold">{ann.author}</span></span>
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 select-none">
+                <span className="font-semibold block text-slate-500">Penulis: <span className="text-slate-700 font-bold">{ann.author}</span></span>
                 
                 <button
                   type="button"

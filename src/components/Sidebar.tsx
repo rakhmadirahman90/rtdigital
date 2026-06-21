@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -26,6 +26,9 @@ import {
   MapPin,
   X
 } from 'lucide-react';
+
+import { RTRW_CONTEXT } from '../utils/constants';
+import { UserAccount } from '../types';
 
 export type ViewType = 
   | 'dashboard'
@@ -52,6 +55,7 @@ interface SidebarProps {
   unreadSaranCount: number;
   pendingLettersCount: number;
   onClose?: () => void;
+  currentUser?: UserAccount | null;
 }
 
 interface MenuItem {
@@ -67,15 +71,29 @@ export default function Sidebar({
   onExitApp,
   unreadSaranCount,
   pendingLettersCount,
-  onClose
+  onClose,
+  currentUser
 }: SidebarProps) {
   // Tracking expanded state of dropdowns
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    kependudukan: true,
-    keuangan: true,
-    layanan: true,
+    kependudukan: false,
+    keuangan: false,
+    layanan: false,
     organisasi: false,
   });
+
+  // Auto-expand menu folder containing the currently selected view
+  useEffect(() => {
+    if (['warga', 'kk'].includes(currentView)) {
+      setExpandedMenus(prev => ({ ...prev, kependudukan: true }));
+    } else if (['kas', 'iuran'].includes(currentView)) {
+      setExpandedMenus(prev => ({ ...prev, keuangan: true }));
+    } else if (['perizinan', 'polling', 'darurat'].includes(currentView)) {
+      setExpandedMenus(prev => ({ ...prev, layanan: true }));
+    } else if (['pengurus', 'pengguna'].includes(currentView)) {
+      setExpandedMenus(prev => ({ ...prev, organisasi: true }));
+    }
+  }, [currentView]);
 
   const toggleExpand = (menuKey: string) => {
     setExpandedMenus(prev => ({
@@ -84,7 +102,8 @@ export default function Sidebar({
     }));
   };
 
-  const menuItems: MenuItem[] = [
+  // Base list of all possible menus
+  const allMenuItems: MenuItem[] = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
     {
       id: 'kependudukan',
@@ -131,6 +150,73 @@ export default function Sidebar({
     { id: 'laporan', name: 'Laporan', icon: FileSpreadsheet },
   ];
 
+  // Dynamic filter based on role as requested: "sesuai dengan tugas dan kewenangannya"
+  const getFilteredMenuItems = (): MenuItem[] => {
+    if (!currentUser) return [allMenuItems[0]]; // fallback
+
+    const role = currentUser.role;
+
+    if (role === 'Superadmin') {
+      // Ketua RT has full view authorization
+      return allMenuItems;
+    }
+
+    if (role === 'Pengurus RT') {
+      // Bendahara / Admin Keuangan: Dashboard, Keuangan, Pengumuman, Kegiatan Warga, Layanan (only permits & polls), Laporan, Saran
+      return allMenuItems.filter(item => 
+        item.id === 'dashboard' ||
+        item.id === 'keuangan' ||
+        item.id === 'pengumuman' ||
+        item.id === 'kegiatan' ||
+        item.id === 'laporan' ||
+        item.id === 'saran' ||
+        (item.id === 'layanan' && item.subItems)
+      ).map(item => {
+        if (item.id === 'layanan' && item.subItems) {
+          // Hide Kontak Darurat, keep permits/polls
+          return {
+            ...item,
+            subItems: item.subItems.filter(sub => sub.id !== 'darurat')
+          };
+        }
+        return item;
+      });
+    }
+
+    if (role === 'Security') {
+      // Security Officer: Dashboard, Pengumuman, Kegiatan Warga, Layanan (only Kontak Darurat), Inventaris RT, Keamanan, Saran
+      return allMenuItems.filter(item => 
+        item.id === 'dashboard' ||
+        item.id === 'pengumuman' ||
+        item.id === 'kegiatan' ||
+        item.id === 'inventaris' ||
+        item.id === 'keamanan' ||
+        item.id === 'saran' ||
+        (item.id === 'layanan' && item.subItems)
+      ).map(item => {
+        if (item.id === 'layanan' && item.subItems) {
+          return {
+            ...item,
+            subItems: item.subItems.filter(sub => sub.id === 'darurat')
+          };
+        }
+        return item;
+      });
+    }
+
+    // Default basic Warga view inside control panel (though normally they use Landing Page)
+    return allMenuItems.filter(item => 
+      item.id === 'dashboard' || 
+      item.id === 'pengumuman' || 
+      item.id === 'kegiatan' ||
+      item.id === 'keamanan' ||
+      item.id === 'inventaris'
+    );
+  };
+
+  const menuItems = getFilteredMenuItems();
+
+
   // Check if current active path is a child
   const isChildActive = (subItems?: { id: ViewType; name: string }[]) => {
     if (!subItems) return false;
@@ -168,13 +254,13 @@ export default function Sidebar({
 
       {/* Admin Quick Profile Card */}
       <div className="p-4 mx-3 my-4 bg-slate-800/60 rounded-xl border border-slate-800 flex items-center space-x-3">
-        <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-sm border border-emerald-500/10">
-          RT
+        <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-sm border border-emerald-500/10 shrink-0 select-none">
+          {currentUser?.name ? currentUser.name.charAt(0) : 'RT'}
         </div>
         <div className="overflow-hidden">
-          <span className="text-xs font-semibold text-white truncate block">Pak RT Fauzan</span>
-          <span className="text-[10px] text-emerald-400 font-medium flex items-center mt-0.5 font-display">
-            <span className="text-emerald-500 mr-1 animate-ping">●</span> RT 04 / RW 12
+          <span className="text-xs font-semibold text-white truncate block">{currentUser?.name || RTRW_CONTEXT.KETUA_RT_01}</span>
+          <span className="text-[10px] text-emerald-405 font-medium flex items-center mt-0.5 truncate font-display">
+            <span className="text-emerald-500 mr-1 shrink-0 animate-ping">●</span> {currentUser?.role || 'Pengurus RT'}
           </span>
         </div>
       </div>

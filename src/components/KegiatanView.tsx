@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, MapPin, Clock, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react';
 import { CommunityEvent } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface KegiatanProps {
   events: CommunityEvent[];
@@ -57,7 +58,7 @@ export default function KegiatanView({
             <span className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
               <Calendar className="w-5 h-5" />
             </span>
-            Agenda Kegiatan Warga RT 04
+            Agenda Kegiatan Warga RT {RTRW_CONTEXT.RT_PRIMARY}
           </h1>
           <p className="text-slate-500 text-xs mt-1">
             Pantau dan ikuti gotong royong warga, arisan, rapat pleno RT, posyandu berkala balita & pemeriksaan lansia.
@@ -146,7 +147,7 @@ export default function KegiatanView({
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Pendopo/Lapangan Balai RT 04"
+                  placeholder={`Contoh: Pendopo/Lapangan Balai RT ${RTRW_CONTEXT.RT_PRIMARY}`}
                   value={form.location}
                   onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
                   className="w-full px-3.5 py-2 border border-slate-220 rounded-lg text-sm"
@@ -175,13 +176,13 @@ export default function KegiatanView({
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="bg-white border text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-50 border-slate-220"
+                className="bg-white border text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-50 border-slate-200"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="bg-emerald-650 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-lg text-xs"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-lg text-xs"
               >
                 Simpan Agenda
               </button>
@@ -204,9 +205,9 @@ export default function KegiatanView({
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                   <span className={`text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-md border ${
-                    ev.category === 'Gotong Royong' ? 'bg-orange-50 text-orange-755 border-orange-200' :
-                    ev.category === 'Posyandu' ? 'bg-pink-50 text-pink-755 border-pink-200' :
-                    ev.category === 'Rapat RT' ? 'bg-teal-50 text-teal-755 border-teal-200' :
+                    ev.category === 'Gotong Royong' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                    ev.category === 'Posyandu' ? 'bg-pink-50 text-pink-700 border-pink-200' :
+                    ev.category === 'Rapat RT' ? 'bg-teal-50 text-teal-700 border-teal-200' :
                     'bg-slate-100 text-slate-700 border-slate-200'
                   }`}>
                     {ev.category}
@@ -214,8 +215,8 @@ export default function KegiatanView({
 
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     ev.status === 'Akan Datang' ? 'bg-emerald-100 text-emerald-800' :
-                    ev.status === 'Selesai' ? 'bg-zinc-200 text-zinc-650' :
-                    'bg-red-100 text-red-850'
+                    ev.status === 'Selesai' ? 'bg-zinc-200 text-zinc-600' :
+                    'bg-red-100 text-red-700'
                   }`}>
                     {ev.status}
                   </span>
@@ -235,7 +236,7 @@ export default function KegiatanView({
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>{ev.date} @ {ev.time} WIB</span>
                   </div>
-                  <div className="flex items-center text-slate-650 gap-2">
+                  <div className="flex items-center text-slate-600 gap-2">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
                     <span className="truncate">Tempat: {ev.location}</span>
                   </div>
@@ -248,7 +249,7 @@ export default function KegiatanView({
                   <button
                     type="button"
                     onClick={() => onUpdateEventStatus(ev.id, 'Selesai')}
-                    className="flex-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-805 text-slate-700 text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1"
+                    className="flex-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Selesaikan</span>
@@ -256,7 +257,7 @@ export default function KegiatanView({
                   <button
                     type="button"
                     onClick={() => onUpdateEventStatus(ev.id, 'Batal')}
-                    className="border border-slate-200 hover:bg-rose-50 text-slate-400 hover:text-rose-650 text-xs font-semibold px-2.5 py-2 rounded-lg transition-colors flex items-center justify-center"
+                    className="border border-slate-200 hover:bg-rose-50 text-slate-400 hover:text-rose-600 text-xs font-semibold px-2.5 py-2 rounded-lg transition-colors flex items-center justify-center"
                     title="Batalkan Kegiatan"
                   >
                     <X className="w-4 h-4" />

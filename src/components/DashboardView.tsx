@@ -22,6 +22,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { Citizen, Announcement, CommunityEvent, LetterRequest, Transaction } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface DashboardViewProps {
   citizens: Citizen[];
@@ -172,10 +173,10 @@ export default function DashboardView({
             <span className="p-2 bg-slate-100 rounded-lg text-slate-700">
               <Users className="w-5 h-5" />
             </span>
-            Sistem RT Digital Warga RT 04
+            Sistem RT Digital Warga RT {RTRW_CONTEXT.RT_PRIMARY}
           </h1>
           <p className="text-slate-500 text-xs mt-1">
-            Selamat datang di pusat pengelolaan administrasi terpadu RT 04 / RW 12
+            {RTRW_CONTEXT.welcomeMessage}
           </p>
         </div>
         
@@ -251,7 +252,7 @@ export default function DashboardView({
           <p className="text-[11px] text-rose-500 font-medium mt-3 flex items-center">
             Pengeluaran bulan ini
           </p>
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-rose-550"></div>
+          <div className="absolute bottom-0 inset-x-0 h-1 bg-rose-500"></div>
         </div>
 
         {/* Iuran Bulan Ini */}
@@ -418,7 +419,7 @@ export default function DashboardView({
               placeholder="Filter nama..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-220 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />
           </div>
 
@@ -428,7 +429,7 @@ export default function DashboardView({
               <button
                 type="button"
                 onClick={handleDeleteSelected}
-                className="bg-red-50 hover:bg-red-100 text-red-650 border border-red-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 mr-auto md:mr-0"
+                className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 mr-auto md:mr-0"
               >
                 Hapus Terpilih ({selectedIds.length})
               </button>
@@ -438,7 +439,7 @@ export default function DashboardView({
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Warga</span>
@@ -449,7 +450,7 @@ export default function DashboardView({
               <button
                 type="button"
                 onClick={() => setShowColMenu(!showColMenu)}
-                className="bg-white hover:bg-slate-50 border border-slate-220 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+                className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
               >
                 <Columns className="w-4 h-4" />
                 <span>Columns</span>
@@ -517,12 +518,12 @@ export default function DashboardView({
                           type="checkbox"
                           checked={isChecked}
                           onChange={(e) => handleSelectOne(citizen.id, e.target.checked)}
-                          className="rounded border-slate-350 text-emerald-600 focus:ring-emerald-550"
+                          className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                         />
                       </td>
                       {colVisibility.name && (
                         <td className="p-4">
-                          <div className="font-semibold text-slate-850 flex items-center">
+                          <div className="font-semibold text-slate-800 flex items-center">
                             {citizen.name}
                             {citizen.name.includes('Pak RT') && (
                               <span className="ml-1.5 bg-emerald-100 text-emerald-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold">Ketua RT</span>
@@ -607,9 +608,9 @@ export default function DashboardView({
       {/* Tambah Warga Modal Window Dialog */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-slate-150 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-display font-bold text-slate-850 text-base flex items-center gap-2">
+              <h3 className="font-display font-bold text-slate-800 text-base flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-emerald-600" />
                 Tambah Anggota Warga Baru
               </h3>
@@ -631,7 +632,7 @@ export default function DashboardView({
                     type="text"
                     name="name"
                     required
-                    placeholder="Contoh: Pak RT Fauzan"
+                    placeholder="Contoh: Hasnawati Sakka"
                     value={formData.name}
                     onChange={handleInputChange}
                     className="w-full px-3.5 py-2 border border-slate-220 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500"

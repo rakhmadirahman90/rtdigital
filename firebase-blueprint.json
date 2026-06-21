@@ -1,0 +1,164 @@
+{
+  "entities": {
+    "citizen": {
+      "title": "Citizen",
+      "description": "Resident or Citizen details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "block": { "type": "string" },
+        "houseNumber": { "type": "string" },
+        "rtNumber": { "type": "string" },
+        "gender": { "type": "string" },
+        "relationship": { "type": "string" },
+        "occupation": { "type": "string" },
+        "phone": { "type": "string" },
+        "isResident": { "type": "boolean" }
+      }
+    },
+    "user": {
+      "title": "User",
+      "description": "User login account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "lastLogin": { "type": "string" }
+      }
+    },
+    "borrow": {
+      "title": "Borrow",
+      "description": "Item borrow requests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "iuran": {
+      "title": "Iuran",
+      "description": "Payment bills",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "announcement": {
+      "title": "Announcement",
+      "description": "RT/RW Announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "inventory": {
+      "title": "Inventory",
+      "description": "Inventory items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "letter": {
+      "title": "Letter",
+      "description": "Letter requests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "incident": {
+      "title": "Incident",
+      "description": "Security incident logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "suggestion": {
+      "title": "Suggestion",
+      "description": "Feedback and suggestions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "poll": {
+      "title": "Poll",
+      "description": "Citizen polls",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "event": {
+      "title": "Event",
+      "description": "Community events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "transaction": {
+      "title": "Transaction",
+      "description": "RT/RW Financial transactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/citizens/{id}": {
+      "schema": "citizen",
+      "description": "Citizens collection"
+    },
+    "/users/{id}": {
+      "schema": "user",
+      "description": "Users collection"
+    },
+    "/borrows/{id}": {
+      "schema": "borrow",
+      "description": "Borrows collection"
+    },
+    "/iurans/{id}": {
+      "schema": "iuran",
+      "description": "Iurans collection"
+    },
+    "/announcements/{id}": {
+      "schema": "announcement",
+      "description": "Announcements collection"
+    },
+    "/inventory/{id}": {
+      "schema": "inventory",
+      "description": "Inventory collection"
+    },
+    "/letters/{id}": {
+      "schema": "letter",
+      "description": "Letters collection"
+    },
+    "/incidents/{id}": {
+      "schema": "incident",
+      "description": "Incidents collection"
+    },
+    "/suggestions/{id}": {
+      "schema": "suggestion",
+      "description": "Suggestions collection"
+    },
+    "/polls/{id}": {
+      "schema": "poll",
+      "description": "Polls collection"
+    },
+    "/events/{id}": {
+      "schema": "event",
+      "description": "Events collection"
+    },
+    "/transactions/{id}": {
+      "schema": "transaction",
+      "description": "Transactions collection"
+    }
+  }
+}

@@ -18,6 +18,19 @@ import KegiatanView from './components/KegiatanView';
 import InventarisKeamananView from './components/InventarisKeamananView';
 import OrganisasiView from './components/OrganisasiView';
 import LaporanView from './components/LaporanView';
+import LoginView from './components/LoginView';
+
+// Central Constraints Context
+import { RTRW_CONTEXT } from './utils/constants';
+
+// Firebase core integration APIs
+import { 
+  db, 
+  syncCollection, 
+  saveDocument, 
+  deleteDocument, 
+  initializeDatabase 
+} from './firebase';
 
 // Original Mock Databases
 import {
@@ -60,136 +73,133 @@ export default function App() {
   const [roleMode, setRoleMode] = useState<'warga' | 'admin'>('warga'); // Primary Router Mode selector
   const [currentView, setCurrentView] = useState<string>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [showLogin, setShowLogin] = useState<boolean>(false);
 
-  // React State variables - hydrated from localStorage as fallbacks
-  const [citizens, setCitizens] = useState<Citizen[]>(() => {
-    const s = localStorage.getItem('rukunin_citizens');
-    return s ? JSON.parse(s) : INITIAL_CITIZENS;
+  // Authenticated User Session
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    const cached = localStorage.getItem('rukunin_auth_user');
+    return cached ? JSON.parse(cached) : null;
   });
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const s = localStorage.getItem('rukunin_transactions');
-    return s ? JSON.parse(s) : INITIAL_TRANSACTIONS;
-  });
-
-  const [iurans, setIurans] = useState<IuranStatus[]>(() => {
-    const s = localStorage.getItem('rukunin_iurans');
-    return s ? JSON.parse(s) : INITIAL_IURAN;
-  });
-
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
-    const s = localStorage.getItem('rukunin_announcements');
-    return s ? JSON.parse(s) : INITIAL_ANNOUNCEMENTS;
-  });
-
-  const [events, setEvents] = useState<CommunityEvent[]>(() => {
-    const s = localStorage.getItem('rukunin_events');
-    return s ? JSON.parse(s) : INITIAL_EVENTS;
-  });
-
-  const [letters, setLetters] = useState<LetterRequest[]>(() => {
-    const s = localStorage.getItem('rukunin_letters');
-    return s ? JSON.parse(s) : INITIAL_LETTERS;
-  });
-
-  const [polls, setPolls] = useState<Poll[]>(() => {
-    const s = localStorage.getItem('rukunin_polls');
-    return s ? JSON.parse(s) : INITIAL_POLLS;
-  });
-
+  // React State variables - dynamically synced from Firestore db
+  const [citizens, setCitizens] = useState<Citizen[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [iurans, setIurans] = useState<IuranStatus[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [events, setEvents] = useState<CommunityEvent[]>([]);
+  const [letters, setLetters] = useState<LetterRequest[]>([]);
+  const [polls, setPolls] = useState<Poll[]>([]);
   const [contacts] = useState<EmergencyContact[]>(INITIAL_CONTACTS);
-
-  const [inventory, setInventory] = useState<InventoryItem[]>(() => {
-    const s = localStorage.getItem('rukunin_inventory');
-    return s ? JSON.parse(s) : INITIAL_INVENTORY;
-  });
-
-  const [borrows, setBorrows] = useState<BorrowRequest[]>(() => {
-    const s = localStorage.getItem('rukunin_borrows');
-    return s ? JSON.parse(s) : INITIAL_BORROWS;
-  });
-
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [borrows, setBorrows] = useState<BorrowRequest[]>([]);
   const [ronda] = useState<RondaSchedule[]>(INITIAL_RONDA);
-
-  const [incidents, setIncidents] = useState<SecurityIncident[]>(() => {
-    const s = localStorage.getItem('rukunin_incidents');
-    // Seed standard mock incident if empty
-    return s ? JSON.parse(s) : [
-      {
-        id: 'inc1',
-        date: '2026-06-18',
-        time: '23:30',
-        reporterName: 'Andi Hermawan',
-        type: 'Orang Mencurigakan',
-        description: 'Terdapat orang tidak dikenal berputar di Gang sd 1 mengintai sepeda motor. Telah dihimbau dan pergi meninggalkan wilayah.',
-        status: 'Selesai'
-      }
-    ];
-  });
-
-  const [suggestions, setSuggestions] = useState<FeedbackSuggestion[]>(() => {
-    const s = localStorage.getItem('rukunin_suggestions');
-    return s ? JSON.parse(s) : INITIAL_SUGGESTIONS;
-  });
-
+  const [incidents, setIncidents] = useState<SecurityIncident[]>([]);
+  const [suggestions, setSuggestions] = useState<FeedbackSuggestion[]>([]);
   const [managers] = useState<RTManager[]>(INITIAL_MANAGERS);
-  const [users] = useState<UserAccount[]>(INITIAL_USERS);
+  const [users, setUsers] = useState<UserAccount[]>([]);
 
-  // Auto-serialization Monitors to keep local storage completely safe
+  // Persistent User Authentication cached in browser
   useEffect(() => {
-    localStorage.setItem('rukunin_citizens', JSON.stringify(citizens));
-  }, [citizens]);
+    if (currentUser) {
+      localStorage.setItem('rukunin_auth_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('rukunin_auth_user');
+    }
+  }, [currentUser]);
 
+  // DB initialization and real-time listeners subscription
   useEffect(() => {
-    localStorage.setItem('rukunin_transactions', JSON.stringify(transactions));
-  }, [transactions]);
+    const initDb = async () => {
+      try {
+        await initializeDatabase({
+          citizens: INITIAL_CITIZENS,
+          transactions: INITIAL_TRANSACTIONS,
+          iurans: INITIAL_IURAN,
+          announcements: INITIAL_ANNOUNCEMENTS,
+          events: INITIAL_EVENTS,
+          letters: INITIAL_LETTERS,
+          polls: INITIAL_POLLS,
+          inventory: INITIAL_INVENTORY,
+          borrows: INITIAL_BORROWS,
+          incidents: [
+            {
+              id: 'inc1',
+              date: '2026-06-18',
+              time: '23:30',
+              reporterName: 'Andi Hermawan',
+              type: 'Orang Mencurigakan',
+              description: 'Terdapat orang tidak dikenal berputar di Gang sd 1 mengintai sepeda motor. Telah dihimbau dan pergi meninggalkan wilayah.',
+              status: 'Selesai'
+            }
+          ],
+          suggestions: INITIAL_SUGGESTIONS,
+          users: INITIAL_USERS
+        });
+      } catch (err) {
+        console.error("Firebase Database bootstrap failed:", err);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem('rukunin_iurans', JSON.stringify(iurans));
-  }, [iurans]);
+    initDb();
 
-  useEffect(() => {
-    localStorage.setItem('rukunin_announcements', JSON.stringify(announcements));
-  }, [announcements]);
+    // Subscribe to Firestore collections real-time feeds
+    const unsubCitizens = syncCollection<Citizen>('citizens', setCitizens);
+    const unsubTransactions = syncCollection<Transaction>('transactions', setTransactions);
+    const unsubIurans = syncCollection<IuranStatus>('iurans', setIurans);
+    const unsubAnnouncements = syncCollection<Announcement>('announcements', (items) => {
+      const sorted = [...items].sort((a, b) => b.id.localeCompare(a.id));
+      setAnnouncements(sorted);
+    });
+    const unsubEvents = syncCollection<CommunityEvent>('events', (items) => {
+      const sorted = [...items].sort((a, b) => b.id.localeCompare(a.id));
+      setEvents(sorted);
+    });
+    const unsubLetters = syncCollection<LetterRequest>('letters', (items) => {
+      const sorted = [...items].sort((a, b) => b.id.localeCompare(a.id));
+      setLetters(sorted);
+    });
+    const unsubPolls = syncCollection<Poll>('polls', setPolls);
+    const unsubInventory = syncCollection<InventoryItem>('inventory', setInventory);
+    const unsubBorrows = syncCollection<BorrowRequest>('borrows', (items) => {
+      const sorted = [...items].sort((a, b) => b.id.localeCompare(a.id));
+      setBorrows(sorted);
+    });
+    const unsubIncidents = syncCollection<SecurityIncident>('incidents', (items) => {
+      const sorted = [...items].sort((a, b) => b.id.localeCompare(a.id));
+      setIncidents(sorted);
+    });
+    const unsubSuggestions = syncCollection<FeedbackSuggestion>('suggestions', (items) => {
+      const sorted = [...items].sort((a, b) => b.id.localeCompare(a.id));
+      setSuggestions(sorted);
+    });
+    const unsubUsers = syncCollection<UserAccount>('users', setUsers);
 
-  useEffect(() => {
-    localStorage.setItem('rukunin_events', JSON.stringify(events));
-  }, [events]);
-
-  useEffect(() => {
-    localStorage.setItem('rukunin_letters', JSON.stringify(letters));
-  }, [letters]);
-
-  useEffect(() => {
-    localStorage.setItem('rukunin_polls', JSON.stringify(polls));
-  }, [polls]);
-
-  useEffect(() => {
-    localStorage.setItem('rukunin_inventory', JSON.stringify(inventory));
-  }, [inventory]);
-
-  useEffect(() => {
-    localStorage.setItem('rukunin_borrows', JSON.stringify(borrows));
-  }, [borrows]);
-
-  useEffect(() => {
-    localStorage.setItem('rukunin_incidents', JSON.stringify(incidents));
-  }, [incidents]);
-
-  useEffect(() => {
-    localStorage.setItem('rukunin_suggestions', JSON.stringify(suggestions));
-  }, [suggestions]);
-
+    return () => {
+      unsubCitizens();
+      unsubTransactions();
+      unsubIurans();
+      unsubAnnouncements();
+      unsubEvents();
+      unsubLetters();
+      unsubPolls();
+      unsubInventory();
+      unsubBorrows();
+      unsubIncidents();
+      unsubSuggestions();
+      unsubUsers();
+    };
+  }, []);
 
   // STATE OPERATION MUTATORS HANDLERS
 
   // Citizens and automatic Dues Setup
-  const handleAddCitizen = (newC: Omit<Citizen, 'id'>) => {
-    const newId = 'c-' + Date.now();
-    const created: Citizen = { ...newC, id: newId };
-    setCitizens(prev => [...prev, created]);
+  // Citizens and automatic Dues Setup
+  const handleAddCitizen = async (newC: Omit<Citizen, 'id'>) => {
+    const id = 'c-' + Date.now();
+    const created: Citizen = { ...newC, id };
+    await saveDocument('citizens', created);
 
-    // Setup basic billing for their Household Block & House Number
+    // Setup basic billing info for their Household Block & House Number
     const billsForHome = iurans.filter(i => i.block === newC.block && i.houseNumber === newC.houseNumber);
     if (billsForHome.length === 0) {
       const billId = `i-${newC.block.replace(/\s+/g, '')}-${newC.houseNumber}-2026-06`;
@@ -201,206 +211,215 @@ export default function App() {
         amountPaid: 0,
         status: 'Belum Bayar'
       };
-      setIurans(prev => [...prev, placeholderBill]);
+      await saveDocument('iurans', placeholderBill);
     }
   };
 
-  const handleDeleteCitizen = (id: string) => {
-    setCitizens(prev => prev.filter(c => c.id !== id));
+  const handleDeleteCitizen = async (id: string) => {
+    await deleteDocument('citizens', id);
   };
 
   // Transactions Ledger
-  const handleAddTransaction = (newTx: Omit<Transaction, 'id'>) => {
+  const handleAddTransaction = async (newTx: Omit<Transaction, 'id'>) => {
+    const id = 't-' + Date.now();
     const tx: Transaction = {
       ...newTx,
-      id: 't-' + Date.now()
+      id
     };
-    setTransactions(prev => [...prev, tx]);
+    await saveDocument('transactions', tx);
   };
 
   // Citizen dues verification approval
-  const handleUpdateIuran = (updated: IuranStatus) => {
-    setIurans(prev => prev.map(i => i.id === updated.id ? updated : i));
+  const handleUpdateIuran = async (updated: IuranStatus) => {
+    await saveDocument('iurans', updated);
 
     // If marked lunas, automatically record it in the Cash Ledger transactions stream!
     if (updated.status === 'Lunas') {
       const exists = transactions.some(t => t.description.includes(`Block ${updated.block} No ${updated.houseNumber}`));
       if (!exists) {
-        handleAddTransaction({
+        await handleAddTransaction({
           date: updated.paidDate || new Date().toISOString().split('T')[0],
           type: 'pemasukan',
           amount: updated.amountPaid || 250000,
           description: `Iuran Bulanan KK Blok ${updated.block} No ${updated.houseNumber} (${updated.month})`,
           source: 'Iuran Bulanan',
           category: 'Iuran Warga',
-          recordedBy: updated.recordedBy || 'Ibu RT'
+          recordedBy: updated.recordedBy || currentUser?.name || 'Ibu RT'
         });
       }
     }
   };
 
   // Announcements News
-  const handleAddAnnouncement = (newAnn: Omit<Announcement, 'id'>) => {
-    setAnnouncements(prev => [
-      {
-        ...newAnn,
-        id: 'a-' + Date.now()
-      },
-      ...prev
-    ]);
+  const handleAddAnnouncement = async (newAnn: Omit<Announcement, 'id'>) => {
+    const id = 'ann-' + Date.now();
+    const ann = {
+      ...newAnn,
+      id,
+      date: new Date().toISOString().split('T')[0],
+      author: currentUser?.name || 'Pengurus RT'
+    };
+    await saveDocument('announcements', ann);
   };
 
-  const handleDeleteAnnouncement = (id: string) => {
-    setAnnouncements(prev => prev.filter(a => a.id !== id));
+  const handleDeleteAnnouncement = async (id: string) => {
+    await deleteDocument('announcements', id);
   };
 
   // Agenda scheduler
-  const handleAddEvent = (newEvent: Omit<CommunityEvent, 'id'>) => {
-    setEvents(prev => [
-      {
-        ...newEvent,
-        id: 'e-' + Date.now()
-      },
-      ...prev
-    ]);
+  const handleAddEvent = async (newEvent: Omit<CommunityEvent, 'id'>) => {
+    const id = 'e-' + Date.now();
+    const created = {
+      ...newEvent,
+      id,
+      participants: 0
+    };
+    await saveDocument('events', created);
   };
 
-  const handleUpdateEventStatus = (id: string, status: 'Akan Datang' | 'Selesai' | 'Batal') => {
-    setEvents(prev => prev.map(e => e.id === id ? { ...e, status } : e));
+  const handleUpdateEventStatus = async (id: string, status: 'Akan Datang' | 'Selesai' | 'Batal') => {
+    const match = events.find(e => e.id === id);
+    if (match) {
+      await saveDocument('events', { ...match, status });
+    }
   };
 
   // Permits approvals & Rejections
-  const handleApproveLetter = (id: string, letterNum: string) => {
-    setLetters(prev => prev.map(l => {
-      if (l.id === id) {
-        return {
-          ...l,
-          status: 'Disetujui',
-          letterNumber: letterNum,
-          approvedDate: new Date().toISOString().split('T')[0]
-        };
-      }
-      return l;
-    }));
+  const handleApproveLetter = async (id: string, letterNum: string) => {
+    const match = letters.find(l => l.id === id);
+    if (match) {
+      await saveDocument('letters', {
+        ...match,
+        status: 'Disetujui',
+        letterNumber: letterNum,
+        approvedDate: new Date().toISOString().split('T')[0]
+      });
+    }
   };
 
-  const handleRejectLetter = (id: string, reason: string) => {
-    setLetters(prev => prev.map(l => {
-      if (l.id === id) {
-        return {
-          ...l,
-          status: 'Ditolak',
-          rejectedReason: reason
-        };
-      }
-      return l;
-    }));
+  const handleRejectLetter = async (id: string, reason: string) => {
+    const match = letters.find(l => l.id === id);
+    if (match) {
+      await saveDocument('letters', {
+        ...match,
+        status: 'Ditolak',
+        rejectedReason: reason
+      });
+    }
   };
 
-  // Pollings & Opinion casts
-  const handleVotePoll = (pollId: string, optionId: string) => {
-    setPolls(prev => prev.map(pol => {
-      if (pol.id === pollId) {
-        const updatedOptions = pol.options.map(opt => {
-          if (opt.id === optionId) {
-            return { ...opt, votes: opt.votes + 1 };
-          }
-          return opt;
-        });
-
-        return {
-          ...pol,
-          options: updatedOptions,
-          totalVotes: pol.totalVotes + 1
-        };
+  // Pollings & Opinion casts checked against voter duplicate checks
+  const handleVotePoll = async (pollId: string, optionId: string, voterName?: string) => {
+    const poll = polls.find(p => p.id === pollId);
+    if (poll) {
+      const voter = voterName || currentUser?.name || 'Warga';
+      const votedUserIds = poll.votedUserIds || [];
+      if (votedUserIds.includes(voter)) {
+        return; // Prevent double ballot casting
       }
-      return pol;
-    }));
-  };
 
-  const handleCreatePoll = (poll: Omit<Poll, 'id' | 'totalVotes' | 'votedUserIds'>) => {
-    setPolls(prev => [
-      {
+      const updatedOptions = poll.options.map(opt => {
+        if (opt.id === optionId) {
+          return { ...opt, votes: opt.votes + 1 };
+        }
+        return opt;
+      });
+
+      await saveDocument('polls', {
         ...poll,
-        id: 'p-' + Date.now(),
-        totalVotes: 0,
-        votedUserIds: []
-      },
-      ...prev
-    ]);
+        options: updatedOptions,
+        totalVotes: poll.totalVotes + 1,
+        votedUserIds: [...votedUserIds, voter]
+      });
+    }
+  };
+
+  const handleCreatePoll = async (poll: Omit<Poll, 'id' | 'totalVotes' | 'votedUserIds'>) => {
+    const id = 'p-' + Date.now();
+    const created: Poll = {
+      ...poll,
+      id,
+      totalVotes: 0,
+      votedUserIds: []
+    };
+    await saveDocument('polls', created);
   };
 
   // Asset borrowings logs and Automatic inventory stock adjustments
-  const handleAddBorrow = (newB: Omit<BorrowRequest, 'id'>) => {
+  const handleAddBorrow = async (newB: Omit<BorrowRequest, 'id'>) => {
     const borrowId = 'b-' + Date.now();
-    setBorrows(prev => [
-      { ...newB, id: borrowId },
-      ...prev
-    ]);
+    const created = { ...newB, id: borrowId, status: 'Menunggu' as const };
+    await saveDocument('borrows', created);
 
     // Automatically decrement goodQuantity and increment borrowedQuantity on matching inventory item!
-    setInventory(prev => prev.map(item => {
-      if (item.name === newB.itemName) {
-        return {
-          ...item,
-          borrowedQuantity: Math.min(item.totalQuantity, item.borrowedQuantity + newB.quantity)
-        };
-      }
-      return item;
-    }));
+    const item = inventory.find(i => i.name === newB.itemName);
+    if (item) {
+      await saveDocument('inventory', {
+        ...item,
+        borrowedQuantity: Math.min(item.totalQuantity, item.borrowedQuantity + newB.quantity)
+      });
+    }
   };
 
-  const handleUpdateBorrowStatus = (id: string, status: 'Disetujui' | 'Selesai' | 'Ditolak') => {
-    setBorrows(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+  const handleUpdateBorrowStatus = async (id: string, status: 'Disetujui' | 'Selesai' | 'Ditolak') => {
+    const ticket = borrows.find(b => b.id === id);
+    if (ticket) {
+      await saveDocument('borrows', { ...ticket, status });
 
-    // If marked "Selesai" (Returned), return the stock balance inside inventory!
-    if (status === 'Selesai') {
-      const ticket = borrows.find(b => b.id === id);
-      if (ticket) {
-        setInventory(prev => prev.map(item => {
-          if (item.name === ticket.itemName) {
-            return {
-              ...item,
-              borrowedQuantity: Math.max(0, item.borrowedQuantity - ticket.quantity)
-            };
-          }
-          return item;
-        }));
+      // If marked "Selesai" (Returned), return the stock balance inside inventory!
+      if (status === 'Selesai') {
+        const item = inventory.find(i => i.name === ticket.itemName);
+        if (item) {
+          await saveDocument('inventory', {
+            ...item,
+            borrowedQuantity: Math.max(0, item.borrowedQuantity - ticket.quantity)
+          });
+        }
       }
     }
   };
 
   // Security incidents reports
-  const handleAddIncident = (newInc: Omit<SecurityIncident, 'id' | 'date' | 'time'>) => {
+  const handleAddIncident = async (newInc: Omit<SecurityIncident, 'id' | 'date' | 'time'>) => {
+    const incidentId = 'inc-' + Date.now();
     const date = new Date().toISOString().split('T')[0];
     const time = new Date().toTimeString().split(' ')[0].substring(0, 5);
-    setIncidents(prev => [
-      {
-        ...newInc,
-        id: 'inc-' + Date.now(),
-        date,
-        time
-      },
-      ...prev
-    ]);
+    const incident: SecurityIncident = {
+      ...newInc,
+      id: incidentId,
+      date,
+      time,
+      status: 'Investigasi'
+    };
+    await saveDocument('incidents', incident);
   };
 
-  const handleUpdateIncidentStatus = (id: string, status: 'Investigasi' | 'Selesai' | 'Darurat') => {
-    setIncidents(prev => prev.map(inc => inc.id === id ? { ...inc, status } : inc));
+  const handleUpdateIncidentStatus = async (id: string, status: 'Investigasi' | 'Selesai' | 'Darurat') => {
+    const match = incidents.find(inc => inc.id === id);
+    if (match) {
+      await saveDocument('incidents', { ...match, status });
+    }
   };
 
   // Citizens Suggestion box comments response
-  const handleReplySuggestion = (id: string, replyText: string) => {
-    setSuggestions(prev => prev.map(s => {
-      if (s.id === id) {
-        return {
-          ...s,
-          reply: replyText,
-          status: 'Selesai'
-        };
-      }
-      return s;
-    }));
+  const handleReplySuggestion = async (id: string, replyText: string) => {
+    const match = suggestions.find(s => s.id === id);
+    if (match) {
+      await saveDocument('suggestions', {
+        ...match,
+        reply: replyText,
+        status: 'Selesai'
+      });
+    }
+  };
+
+  const handleRegisterUser = async (user: Omit<UserAccount, 'id'>) => {
+    const id = 'usr-' + Date.now();
+    const newUser: UserAccount = {
+      ...user,
+      id
+    };
+    await saveDocument('users', newUser);
   };
 
 
@@ -525,49 +544,43 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-55 flex flex-col font-sans">
       
-      {/* 1. DEMO ROLE SELECTOR VIEW PORTAL RUNTIME BANNER (Print: hidden) */}
-      <div className="bg-slate-900 border-b border-slate-800 text-white px-6 py-2.5 flex flex-col sm:flex-row justify-between items-center text-xs space-y-2 sm:space-y-0 select-none print:hidden shadow-md">
-        <div className="flex items-center space-x-2.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
-          <span className="font-semibold text-slate-100 font-display">SIMULASI LIVE DEMO:</span>
-          <span className="text-[11px] text-slate-400">Rukunin Sistem Kelola RT Digital — Jagakarsa RT 04 / RW 12</span>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            onClick={() => setRoleMode('warga')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-              roleMode === 'warga'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800 hover:bg-slate-750 text-slate-350'
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Tampilan Warga (Landing Page)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setRoleMode('admin')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-              roleMode === 'admin'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800 hover:bg-slate-750 text-slate-350'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Admin Control Panel (Web RT)</span>
-          </button>
-        </div>
-      </div>
-
-      {roleMode === 'warga' ? (
+      {showLogin ? (
+        <LoginView
+          onLoginSuccess={(user) => {
+            setCurrentUser(user);
+            setShowLogin(false);
+            if (user.role === 'Warga') {
+              setRoleMode('warga');
+            } else {
+              setRoleMode('admin');
+              setCurrentView('dashboard');
+            }
+          }}
+          users={users}
+          onRegisterUser={async (name, email, role) => {
+            const id = 'usr-' + Date.now();
+            const newUser: UserAccount = {
+              id,
+              name,
+              email,
+              role,
+              isActive: true
+            };
+            await saveDocument('users', newUser);
+            return newUser;
+          }}
+          onClose={() => setShowLogin(false)}
+        />
+      ) : roleMode === 'warga' ? (
         /* 2. RENDER THE MARKETING LANDING PAGE WITH DIGITAL SIMULATION PORTAL SUPPORT */
         <LandingPage 
           onEnterApp={() => { 
-            setRoleMode('admin'); 
-            setCurrentView('dashboard'); 
+            if (currentUser && currentUser.role !== 'Warga') {
+              setRoleMode('admin');
+              setCurrentView('dashboard');
+            } else {
+              setShowLogin(true);
+            }
           }} 
           citizens={citizens}
           announcements={announcements}
@@ -575,34 +588,40 @@ export default function App() {
           polls={polls}
           onVotePoll={handleVotePoll}
           suggestions={suggestions}
-          onSubmitSuggestion={(newSuggestion) => {
+          onSubmitSuggestion={async (newSuggestion) => {
+            const id = 's-' + Date.now();
             const suggestion = {
               ...newSuggestion,
-              id: 's-' + Date.now(),
+              id,
               date: new Date().toISOString().split('T')[0],
               status: 'Belum Dibaca' as const
             };
-            setSuggestions(prev => [suggestion, ...prev]);
+            await saveDocument('suggestions', suggestion);
           }}
           iurans={iurans}
           onUpdateIuran={handleUpdateIuran}
-          onCreateLetterRequest={(type, purpose, applicant) => {
-            setLetters(prev => [
-              {
-                id: 'l-' + Date.now(),
-                applicantId: applicant.id,
-                applicantName: applicant.name,
-                applicantGender: applicant.gender,
-                applicantAddress: `Blok ${applicant.block} No. ${applicant.houseNumber}, RT 04`,
-                letterType: type as any,
-                purpose: purpose,
-                submittedDate: new Date().toISOString().split('T')[0],
-                status: 'Menunggu'
-              },
-              ...prev
-            ]);
+          onCreateLetterRequest={async (type, purpose, applicant) => {
+            const id = 'l-' + Date.now();
+            const req = {
+              id,
+              applicantId: applicant.id,
+              applicantName: applicant.name,
+              applicantGender: applicant.gender,
+              applicantAddress: `Blok ${applicant.block} No. ${applicant.houseNumber}, RT ${RTRW_CONTEXT.RT_PRIMARY}`,
+              letterType: type as any,
+              purpose: purpose,
+              submittedDate: new Date().toISOString().split('T')[0],
+              status: 'Menunggu' as const
+            };
+            await saveDocument('letters', req);
           }}
           letters={letters}
+          currentUser={currentUser}
+          onLogout={() => {
+            setCurrentUser(null);
+            setRoleMode('warga');
+          }}
+          onLoginClick={() => setShowLogin(true)}
         />
       ) : (
         /* 3. RENDER THE COMPREHENSIVE ADMIN BACK-OFFICE PLATFORM (Responsive Sidebar & Content Layout) */
@@ -614,7 +633,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-1 px-2 bg-slate-850 hover:bg-slate-750 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
+                className="p-1 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
                 aria-label="Open navigation menu"
               >
                 <Menu className="w-5 h-5" />
@@ -628,7 +647,7 @@ export default function App() {
             </div>
             
             <div className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 uppercase tracking-wide">
-              RT 04
+              RT {RTRW_CONTEXT.RT_PRIMARY}
             </div>
           </div>
 
@@ -658,6 +677,7 @@ export default function App() {
                 setMobileMenuOpen(false);
               }}
               onClose={() => setMobileMenuOpen(false)}
+              currentUser={currentUser}
             />
           </div>
 

@@ -19,7 +19,9 @@ import {
   CreditCard,
   Check,
   Receipt,
-  Download
+  Download,
+  Eye,
+  FileImage
 } from 'lucide-react';
 import { Transaction, IuranStatus, Citizen } from '../types';
 
@@ -42,6 +44,8 @@ export default function KeuanganView({
   const [showTxModal, setShowTxModal] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedHouse, setSelectedHouse] = useState<{ block: string; houseNo: string } | null>(null);
+  const [previewReceiptImage, setPreviewReceiptImage] = useState<string | null>(null);
+  const [previewReceiptName, setPreviewReceiptName] = useState<string>('');
 
   // Filter states
   const [txSearch, setTxSearch] = useState('');
@@ -280,13 +284,13 @@ export default function KeuanganView({
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               {/* Search */}
               <div className="relative w-full sm:w-64">
-                <Search className="w-4 h-4 text-slate-450 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Cari transaksi..."
                   value={txSearch}
                   onChange={(e) => setTxSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 border border-slate-220 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
@@ -294,7 +298,7 @@ export default function KeuanganView({
               <select
                 value={txTypeFilter}
                 onChange={(e: any) => setTxTypeFilter(e.target.value)}
-                className="px-3 py-1.5 border border-slate-220 rounded-lg text-xs bg-white focus:outline-none"
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none"
               >
                 <option value="all">Semua Tipe Kas</option>
                 <option value="pemasukan">📈 Kas Pemasukan</option>
@@ -328,7 +332,7 @@ export default function KeuanganView({
                 {filteredTx.length > 0 ? (
                   filteredTx.map(t => (
                     <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 whitespace-nowrap text-xs text-slate-450 font-mono">
+                      <td className="p-4 whitespace-nowrap text-xs text-slate-500 font-mono">
                         {t.date}
                       </td>
                       <td className="p-4">
@@ -340,12 +344,12 @@ export default function KeuanganView({
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         <span className={`font-mono font-bold text-xs ${
-                          t.type === 'pemasukan' ? 'text-teal-650' : 'text-rose-650'
+                          t.type === 'pemasukan' ? 'text-teal-700' : 'text-rose-700'
                         }`}>
                           {t.type === 'pemasukan' ? '+' : '-'} {formatCurrency(t.amount)}
                         </span>
                       </td>
-                      <td className="p-4 text-xs text-slate-450 font-medium">
+                      <td className="p-4 text-xs text-slate-500 font-medium">
                         {t.recordedBy}
                       </td>
                     </tr>
@@ -414,15 +418,78 @@ export default function KeuanganView({
                       <span className="font-semibold text-slate-800 font-mono">Rp 250.000</span>
                     </div>
 
-                    {record && record.status === 'Lunas' && (
-                      <div className="text-[10px] text-slate-450 font-medium">
-                        <div>Pembayaran: {record.paymentMethod}</div>
-                        <div>Diterima: {record.paidDate} • oleh {record.recordedBy}</div>
+                     {record && record.status === 'Lunas' && (
+                      <div className="text-[11px] text-slate-500 font-medium space-y-1.5">
+                        <div className="flex justify-between">
+                          <span>Metode Setor:</span>
+                          <span className="font-semibold text-slate-700">{record.paymentMethod}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px]">
+                          <span>Diterima:</span>
+                          <span>{record.paidDate} ({record.recordedBy})</span>
+                        </div>
+                        {record.receiptImage && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewReceiptImage(record.receiptImage || null);
+                              setPreviewReceiptName(record.uploadedFileName || 'Bukti_Transfer_Lunas.png');
+                            }}
+                            className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 mt-1 cursor-pointer transition hover:underline"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Lihat Bukti Transfer</span>
+                          </button>
+                        )}
                       </div>
                     )}
                     {record && record.status === 'Menunggu Verifikasi' && (
-                      <div className="bg-amber-100/50 border border-amber-200 text-amber-900 p-2 text-[10px] rounded">
-                        💡 Warga telah melampirkan transfer bank digital. Mohon audit segera.
+                      <div className="space-y-2 mt-1.5">
+                        <div className="bg-amber-100/50 border border-amber-200 text-amber-900 p-2 text-[10px] rounded leading-normal">
+                          💡 Warga telah menyetorkan iuran secara digital via <strong>{record.paymentMethod || 'Transfer'}.</strong> Mohon periksa lampiran sebelum approve.
+                        </div>
+
+                        {/* Interactive thumbnail or fallback mockup receipt */}
+                        <div className="border border-slate-200/80 bg-slate-50 hover:bg-slate-100/60 rounded-xl p-2.5 flex items-center justify-between gap-3 transition">
+                          <div className="flex items-center gap-2 truncate">
+                            <div className="w-9 h-9 rounded bg-white border border-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center">
+                              {record.receiptImage ? (
+                                <img
+                                  src={record.receiptImage}
+                                  alt="Bukti Transfer"
+                                  className="w-full h-full object-cover cursor-zoom-in"
+                                  referrerPolicy="no-referrer"
+                                  onClick={() => {
+                                    setPreviewReceiptImage(record.receiptImage || null);
+                                    setPreviewReceiptName(record.uploadedFileName || 'Struk_Pembayaran.png');
+                                  }}
+                                />
+                              ) : (
+                                <FileImage className="w-4.5 h-4.5 text-zinc-400" />
+                              )}
+                            </div>
+                            <div className="truncate text-left text-[11px]">
+                              <p className="font-bold text-slate-700 truncate font-mono text-[10.5px]">
+                                {record.uploadedFileName || 'Bukti_Transfer.png'}
+                              </p>
+                              <span className="text-[9px] text-slate-400 block font-mono">Pratinjau klik Buka</span>
+                            </div>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // If there is no custom upload (e.g. mock pending dues), we can generate a very cute high-performance mock transfer slip as a fallback!
+                              const path = record.receiptImage || 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=600&auto=format&fit=crop&q=80';
+                              setPreviewReceiptImage(path);
+                              setPreviewReceiptName(record.uploadedFileName || 'Bukti_Simulasi_Siskamling.png');
+                            }}
+                            className="text-xs font-bold text-amber-700 bg-amber-500/10 hover:bg-amber-600 hover:text-white px-2 py-1 rounded transition flex items-center gap-1 cursor-pointer shrink-0"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Buka</span>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -471,9 +538,9 @@ export default function KeuanganView({
       {/* MODAL 1: INPUT TRANSACTION (KAS RT) */}
       {showTxModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-slate-150 shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-display font-bold text-slate-850 text-base flex items-center gap-2">
+              <h3 className="font-display font-bold text-slate-800 text-base flex items-center gap-2">
                 <Plus className="w-5 h-5 text-emerald-600" />
                 Catat Transaksi Buku Kas Baru
               </h3>
@@ -497,7 +564,7 @@ export default function KeuanganView({
                     className={`py-2 text-xs font-bold rounded-lg border transition ${
                       txForm.type === 'pemasukan'
                         ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-                        : 'border-slate-200 text-slate-550'
+                        : 'border-slate-200 text-slate-500'
                     }`}
                   >
                     📈 Pemasukan (Debit)
@@ -508,7 +575,7 @@ export default function KeuanganView({
                     className={`py-2 text-xs font-bold rounded-lg border transition ${
                       txForm.type === 'pengeluaran'
                         ? 'bg-rose-50 border-rose-300 text-rose-800'
-                        : 'border-slate-200 text-slate-550'
+                        : 'border-slate-200 text-slate-500'
                     }`}
                   >
                     📉 Pengeluaran (Kredit)
@@ -607,9 +674,9 @@ export default function KeuanganView({
       {/* MODAL 2: PAY IURAN Tagihan */}
       {showPayModal && selectedHouse && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-slate-150 shadow-2xl w-full max-w-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-sm overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-display font-bold text-slate-850 text-base">
+              <h3 className="font-display font-bold text-slate-800 text-base">
                 Catat Setoran Iuran Warga
               </h3>
               <button 
@@ -622,8 +689,8 @@ export default function KeuanganView({
             </div>
 
             <form onSubmit={handlePaySubmit} className="p-5 space-y-4">
-              <div className="p-3 bg-slate-50 border border-slate-150 text-xs rounded-lg space-y-1">
-                <span className="text-slate-450 uppercase font-bold text-[9px] font-mono">Rumah Tujuan Setoran</span>
+              <div className="p-3 bg-slate-50 border border-slate-200 text-xs rounded-lg space-y-1">
+                <span className="text-slate-500 uppercase font-bold text-[9px] font-mono">Rumah Tujuan Setoran</span>
                 <p className="font-display font-bold text-slate-800 text-sm">Blok {selectedHouse.block} No. {selectedHouse.houseNo}</p>
                 <p className="text-slate-500 font-semibold">Besaran Tagihan: Rp 250.000 (Per-KK)</p>
               </div>
@@ -634,7 +701,7 @@ export default function KeuanganView({
                 <select
                   value={payForm.month}
                   onChange={(e) => setPayForm(prev => ({ ...prev, month: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-220 rounded-lg text-sm bg-white focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"
                 >
                   <option value="2026-06">Juni 2026</option>
                   <option value="2026-07">Juli 2026</option>
@@ -648,7 +715,7 @@ export default function KeuanganView({
                 <select
                   value={payForm.paymentMethod}
                   onChange={(e) => setPayForm(prev => ({ ...prev, paymentMethod: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-slate-220 rounded-lg text-sm bg-white focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"
                 >
                   <option value="Cash">Cash (Manual Tunai)</option>
                   <option value="Transfer Bank">Transfer Bank Digital</option>
@@ -666,12 +733,73 @@ export default function KeuanganView({
                 </button>
                 <button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-550 text-white font-bold px-5 py-2 rounded-lg text-xs transition"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-lg text-xs transition"
                 >
                   Konfirmasi Lunas
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* RECEIPT IMAGE PREVIEW LIGHTBOX MODAL */}
+      {previewReceiptImage && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl">
+            {/* Modal header */}
+            <div className="bg-slate-950 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+              <div>
+                <h4 className="font-display font-black text-xs text-emerald-400 tracking-wide uppercase font-mono">
+                  🔎 AUDIT BUKTI TRANSFER DIGITAL
+                </h4>
+                <p className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[240px] sm:max-w-md font-sans">
+                  File: {previewReceiptName || 'Struk_Kwitansi.png'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setPreviewReceiptImage(null); setPreviewReceiptName(''); }}
+                className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-full transition cursor-pointer"
+                title="Tutup Detil"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal content body with the image */}
+            <div className="p-6 flex flex-col items-center justify-center bg-slate-950/60 leading-relaxed text-center">
+              <div className="bg-white p-2.5 rounded-2xl border border-slate-850 max-h-[64vh] w-full flex items-center justify-center overflow-auto shadow-inner">
+                <img
+                  src={previewReceiptImage}
+                  alt="Bukti Setoran / Transfer"
+                  className="max-h-[50vh] w-auto object-contain rounded-xl select-none"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              <div className="mt-4 flex w-full items-center justify-between bg-slate-900 p-3 rounded-2xl border border-slate-800 text-left text-[11.5px] text-slate-400 font-sans">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  Koneksi Aman Gateway RT
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">AUDIT LEVEL 1 SAKTI</span>
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="bg-emerald-950/5 border-t border-slate-800 px-6 py-3.5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => { setPreviewReceiptImage(null); setPreviewReceiptName(''); }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer"
+              >
+                Selesai Memeriksa ×
+              </button>
+            </div>
           </div>
         </div>
       )}

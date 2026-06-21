@@ -6,6 +6,7 @@
 import React from 'react';
 import { FileSpreadsheet, Printer, Users, Wallet, TrendingUp, TrendingDown, Target, Building, Shield } from 'lucide-react';
 import { Citizen, Transaction, IuranStatus } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface LaporanProps {
   citizens: Citizen[];
@@ -56,7 +57,7 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
             Hasil Laporan & Konsolidasi Data RT
           </h1>
           <p className="text-slate-500 text-xs mt-1">
-            Unduh rekapitulasi audit kependudukan warga RT 04, bagan gender dan status kas lunas iuran bulanan warga.
+            Unduh rekapitulasi audit kependudukan warga RT {RTRW_CONTEXT.RT_PRIMARY}, bagan gender dan status kas lunas iuran bulanan warga.
           </p>
         </div>
 
@@ -72,8 +73,8 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
 
       {/* PRINT-ONLY OFFICIAL HEADER */}
       <div className="hidden print:block text-center border-b-4 border-double border-slate-900 pb-4 mb-8">
-        <h2 className="text-xl font-bold font-serif uppercase">Laporan Bulanan Komite Rukun Tetangga 04 / RW 12</h2>
-        <p className="text-xs text-slate-600 mt-1 font-mono">Kelurahan Jagakarsa, Jakarta Selatan, DKI Jakarta | PERIODE JUNI 2026</p>
+        <h2 className="text-xl font-bold font-serif uppercase">Laporan Bulanan Komite Rukun Tetangga {RTRW_CONTEXT.RT_PRIMARY} / RW {RTRW_CONTEXT.RW}</h2>
+        <p className="text-xs text-slate-600 mt-1 font-mono">Kelurahan {RTRW_CONTEXT.KELURAHAN}, Kecamatan {RTRW_CONTEXT.KECAMATAN}, {RTRW_CONTEXT.KOTA} | PERIODE JUNI 2026</p>
       </div>
 
       {/* Main Stats Digest layout */}
@@ -81,14 +82,14 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
         
         {/* Card A: Census statistics */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4 print:border-slate-400">
-          <h3 className="font-display font-semibold text-slate-805 text-sm flex items-center gap-2 border-b border-slate-150 pb-2">
+          <h3 className="font-display font-semibold text-slate-800 text-sm flex items-center gap-2 border-b border-slate-200 pb-2">
             <Users className="w-4 h-4 text-emerald-600" />
             Statistik Demografi Sensus
           </h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-550 font-medium">Total Sampel Warga</span>
+              <span className="text-slate-500 font-medium">Total Sampel Warga</span>
               <span className="font-bold text-slate-900 font-mono text-sm">{totalWarga} Jiwa</span>
             </div>
 
@@ -96,11 +97,11 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
             <div className="space-y-1 text-xs">
               <div className="flex justify-between items-center font-medium">
                 <span className="text-blue-600">Laki-Laki ({maleCount} org)</span>
-                <span className="text-rose-500">Perempuan ({femaleCount} org)</span>
+                <span className="text-rose-550 font-bold">Perempuan ({femaleCount} org)</span>
               </div>
-              <div className="h-3.5 bg-rose-150 rounded-full overflow-hidden flex">
+              <div className="h-3.5 bg-rose-100 rounded-full overflow-hidden flex">
                 <div style={{ width: `${malePercent}%` }} className="bg-blue-500 h-full"></div>
-                <div style={{ width: `${femalePercent}%` }} className="bg-rose-455 h-full"></div>
+                <div style={{ width: `${femalePercent}%` }} className="bg-rose-500 h-full"></div>
               </div>
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>{malePercent}% Laki-Laki</span>
@@ -133,7 +134,7 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
 
         {/* Card B: Cash Flow Balance Summary */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4 print:border-slate-400">
-          <h3 className="font-display font-semibold text-slate-805 text-sm flex items-center gap-2 border-b border-slate-150 pb-2">
+          <h3 className="font-display font-semibold text-slate-800 text-sm flex items-center gap-2 border-b border-slate-200 pb-2">
             <Wallet className="w-4 h-4 text-emerald-600" />
             Laporan Arus Buku Kas RT
           </h3>
@@ -155,7 +156,7 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
               <span className="font-bold text-rose-600 font-mono">{formatCurrency(totalOut)}</span>
             </div>
 
-            <div className="flex justify-between py-3 items-center bg-slate-50 rounded-lg px-3.5 border border-slate-150">
+            <div className="flex justify-between py-3 items-center bg-slate-50 rounded-lg px-3.5 border border-slate-200">
               <span className="font-bold text-slate-800">Saldo Kas Bersih</span>
               <span className="font-bold font-mono text-slate-900 text-sm">{formatCurrency(totalBalance)}</span>
             </div>
@@ -168,7 +169,7 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
 
         {/* Card C: Iuran Dues collection rate */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4 print:border-slate-400">
-          <h3 className="font-display font-semibold text-slate-850 text-sm flex items-center gap-2 border-b border-slate-150 pb-2">
+          <h3 className="font-display font-semibold text-slate-800 text-sm flex items-center gap-2 border-b border-slate-200 pb-2">
             <Target className="w-4 h-4 text-emerald-600" />
             Efisiensi Penarikan Iuran
           </h3>
@@ -210,7 +211,7 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
                 <span>KK Lunas Bulan Ini (Juni 2026):</span>
                 <span className="font-bold text-slate-900 font-mono">{paidCount} dari {totalBillCount} KK</span>
               </div>
-              <div className="flex justify-between items-center py-1 text-rose-650 font-medium">
+              <div className="flex justify-between items-center py-1 text-rose-600 font-medium">
                 <span>Belum Setor / Menunggak:</span>
                 <span className="font-bold font-mono">{totalBillCount - paidCount} KK</span>
               </div>
@@ -222,12 +223,12 @@ export default function LaporanView({ citizens, transactions, iurans }: LaporanP
       {/* Signature block on printer */}
       <div className="hidden print:flex justify-between text-xs mt-16 px-10 border-t border-slate-200 pt-8 font-serif">
         <div className="text-center space-y-14">
-          <span>Mengetahui, <br /> Ketua RW 12</span>
+          <span>Mengetahui, <br /> Ketua RW {RTRW_CONTEXT.RW}</span>
           <div className="font-bold underline">( ........................ )</div>
         </div>
         <div className="text-center space-y-14">
-          <span>Jakarta, 20 Juni 2026 <br /> Ketua RT 04 / RW 12</span>
-          <div className="font-bold underline">PAK RT FAUZAN</div>
+          <span>{RTRW_CONTEXT.KOTA}, 20 Juni 2026 <br /> Ketua RT {RTRW_CONTEXT.RT_PRIMARY} / RW {RTRW_CONTEXT.RW}</span>
+          <div className="font-bold underline">{RTRW_CONTEXT.KETUA_RT_01.toUpperCase()}</div>
         </div>
       </div>
     </div>

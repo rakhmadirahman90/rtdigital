@@ -40,6 +40,8 @@ export interface IuranStatus {
   paymentMethod?: 'Cash' | 'Transfer Bank' | 'E-wallet';
   status: 'Lunas' | 'Belum Bayar' | 'Menunggu Verifikasi';
   recordedBy?: string;
+  receiptImage?: string;
+  uploadedFileName?: string;
 }
 
 export interface Announcement {
@@ -99,7 +101,7 @@ export interface EmergencyContact {
   id: string;
   name: string;
   number: string;
-  category: 'Keamanan' | 'Kesehatan' | 'Pemadam Kebakaran' | 'Instansi Air/Listrik' | 'Seksi Humas';
+  category: string;
   isLocal: boolean; // Local RT vs Public service
 }
 
@@ -155,7 +157,7 @@ export interface FeedbackSuggestion {
 export interface RTManager {
   id: string;
   name: string;
-  role: 'Ketua RT' | 'Wakil Ketua RT' | 'Sekretaris' | 'Bendahara' | 'Seksi Keamanan' | 'Seksi Pembangunan' | 'Seksi Humas & Sosial' | 'Pembina/Penasehat';
+  role: string;
   phone: string;
   imageUrl?: string;
 }

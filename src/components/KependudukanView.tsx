@@ -20,6 +20,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import { Citizen } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface KependudukanProps {
   citizens: Citizen[];
@@ -98,7 +99,7 @@ export default function KependudukanView({
             <span className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
               <Users className="w-5 h-5" />
             </span>
-            Kependudukan RT 04
+            Kependudukan RT {RTRW_CONTEXT.RT_PRIMARY}
           </h1>
           <p className="text-slate-500 text-xs mt-1">
             Kelola data registrasi diri warga mandiri, struktur keluarga, dan status kependudukan.
@@ -222,7 +223,7 @@ export default function KependudukanView({
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <span className="text-xs font-semibold text-slate-500">
-                  Menampilkan <span className="font-bold text-slate-850">{filtered.length}</span> dari {citizens.length} warga RT 04
+                  Menampilkan <span className="font-bold text-slate-850">{filtered.length}</span> dari {citizens.length} warga RT {RTRW_CONTEXT.RT_PRIMARY}
                 </span>
               </div>
 
@@ -380,7 +381,7 @@ export default function KependudukanView({
                 <h3 className="font-display font-bold text-lg text-slate-900 leading-tight">
                   {selectedCitizen.name}
                 </h3>
-                <span className="text-xs text-slate-400 font-mono block mt-1">ID: {selectedCitizen.id} • RT 04 / RW 12</span>
+                <span className="text-xs text-slate-400 font-mono block mt-1">ID: {selectedCitizen.id} • RT {RTRW_CONTEXT.RT_PRIMARY} / RW {RTRW_CONTEXT.RW}</span>
               </div>
 
               <div className="divide-y divide-slate-100 text-xs text-slate-700 space-y-3 pt-2">

@@ -22,6 +22,7 @@ import {
   Award
 } from 'lucide-react';
 import { LetterRequest, Poll, EmergencyContact } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface LayananProps {
   letters: LetterRequest[];
@@ -253,7 +254,7 @@ export default function LayananView({
               Template Surat Instan
             </h3>
             <p className="text-xs text-slate-550 leading-relaxed">
-              Sistem secara otomatis menyediakan KOP Resmi RT 04, mengisi variabel kependudukan, melampirkan tanda tangan digital pengurus, sehingga RT tidak perlu lagi mengetik dokumen secara manual.
+              Sistem secara otomatis menyediakan KOP Resmi RT {RTRW_CONTEXT.RT_PRIMARY}, mengisi variabel kependudukan, melampirkan tanda tangan digital pengurus, sehingga RT tidak perlu lagi mengetik dokumen secara manual.
             </p>
             
             <div className="space-y-2 pt-2">
@@ -316,7 +317,7 @@ export default function LayananView({
                               type="button"
                               onClick={() => onVotePoll(p.id, opt.id)}
                               disabled={p.status === 'Selesai'}
-                              className="w-full text-left relative z-10 border border-slate-150 hover:border-emerald-300 rounded-xl p-3.5 text-xs text-slate-850 font-medium overflow-hidden transition-all bg-transparent disabled:cursor-not-allowed flex items-center justify-between"
+                              className="w-full text-left relative z-10 border border-slate-200 hover:border-emerald-300 rounded-xl p-3.5 text-xs text-slate-800 font-medium overflow-hidden transition-all bg-transparent disabled:cursor-not-allowed flex items-center justify-between"
                             >
                               <span className="truncate pr-4">{opt.text}</span>
                               <span className="font-bold text-slate-950 font-mono select-none">{opt.votes} Suara ({percent}%)</span>
@@ -348,7 +349,7 @@ export default function LayananView({
               Sistem Mufakat Modern
             </h3>
             <p className="text-xs text-slate-550 leading-relaxed pt-2">
-              Semua voting dienkripsi untuk privasi warga, keputusan akhir dapat didownload oleh pengurus dalam file bita PDF rapat sebagai bukti legal asasi persetujuan mayoritas RT 04.
+              Semua voting dienkripsi untuk privasi warga, keputusan akhir dapat didownload oleh pengurus dalam file bita PDF rapat sebagai bukti legal asasi persetujuan mayoritas RT {RTRW_CONTEXT.RT_PRIMARY}.
             </p>
           </div>
         </div>
@@ -368,7 +369,7 @@ export default function LayananView({
                   </span>
                   
                   {c.isLocal ? (
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold border border-emerald-250 rounded-full px-2 py-0.5">Lokal RT 04</span>
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold border border-emerald-250 rounded-full px-2 py-0.5">Lokal RT {RTRW_CONTEXT.RT_PRIMARY}</span>
                   ) : (
                     <span className="text-[10px] bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Layanan Umum</span>
                   )}
@@ -395,9 +396,9 @@ export default function LayananView({
       {/* REJECT LETTER DIALOG MODAL */}
       {rejectId && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-slate-150 shadow-2xl w-full max-w-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-sm overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-display font-semibold text-slate-850 text-base">Tolak Pengajuan Surat</h3>
+              <h3 className="font-display font-semibold text-slate-800 text-base">Tolak Pengajuan Surat</h3>
               <button type="button" onClick={() => setRejectId(null)} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
             </div>
             <form onSubmit={rejectSubmit => { rejectSubmit.preventDefault(); if (rejectReason) { onRejectLetter(rejectId, rejectReason); setRejectId(null); setRejectReason(''); } }} className="p-5 space-y-4">
@@ -424,9 +425,9 @@ export default function LayananView({
       {/* CREATE POLL MODAL */}
       {showPollModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-slate-150 shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-display font-bold text-slate-850 text-base flex items-center gap-1.5">
+              <h3 className="font-display font-bold text-slate-800 text-base flex items-center gap-1.5">
                 <Vote className="w-5 h-5 text-emerald-600" />
                 Buat Polling / Voting Warga Baru
               </h3>
@@ -550,7 +551,7 @@ export default function LayananView({
 
                 {/* Declaration opening */}
                 <p className="text-xs leading-relaxed mt-6 text-slate-800 font-serif indent-8">
-                  Yang bertanda tangan di bawah ini, Pengurus Rukun Tetangga (RT) 04 Rukun Warga (RW) 12 Kelurahan Jagarsa, Kecamatan Jagakarsa menerangkan dengan sesungguhnya bahwa yang bersangkutan di bawah ini:
+                  Yang bertanda tangan di bawah ini, Pengurus Rukun Tetangga (RT) {RTRW_CONTEXT.RT_PRIMARY} Rukun Warga (RW) {RTRW_CONTEXT.RW} Kelurahan {RTRW_CONTEXT.KELURAHAN}, Kecamatan {RTRW_CONTEXT.KECAMATAN} menerangkan dengan sesungguhnya bahwa yang bersangkutan di bawah ini:
                 </p>
 
                 {/* Substantive citizen rows */}
@@ -584,20 +585,20 @@ export default function LayananView({
                 {/* Sign-off seal */}
                 <div className="mt-10 flex justify-between text-xs px-4">
                   <div className="text-center space-y-16">
-                    <span>Mengetahui, <br /> Ketua RW 12</span>
+                    <span>Mengetahui, <br /> Ketua RW {RTRW_CONTEXT.RW}</span>
                     <div className="font-bold underline decoration-dotted">( ........................ )</div>
                   </div>
                   <div className="text-center space-y-16 relative">
-                    <span>Jakarta, {viewingDocument.approvedDate} <br /> Ketua RT 04 / RW 12</span>
+                    <span>{RTRW_CONTEXT.KOTA}, {viewingDocument.approvedDate} <br /> Ketua RT {RTRW_CONTEXT.RT_PRIMARY} / RW {RTRW_CONTEXT.RW}</span>
                     
                     {/* Simulated digital signature stamp */}
                     <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex items-center justify-center pointer-events-none rotate-3">
                       <div className="border border-emerald-500 bg-emerald-50/15 text-emerald-600 font-display font-extrabold text-[8px] uppercase tracking-widest leading-none border-dashed px-2 py-1 rounded w-28 text-center animate-pulse">
-                        Approved Digital BY <br /> RT-FAUZAN 04/12
+                        Approved Digital BY <br /> {RTRW_CONTEXT.KETUA_RT_01.split(' ')[0].toUpperCase()} {RTRW_CONTEXT.RT_PRIMARY}/{RTRW_CONTEXT.RW}
                       </div>
                     </div>
 
-                    <div className="font-bold underline">PAK RT FAUZAN</div>
+                    <div className="font-bold underline">{RTRW_CONTEXT.KETUA_RT_01.toUpperCase()}</div>
                   </div>
                 </div>
               </div>

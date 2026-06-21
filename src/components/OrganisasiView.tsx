@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Award, UserCheck, Shield, Users, Mail, Phone, ExternalLink, Calendar, CheckCircle, Plus } from 'lucide-react';
 import { RTManager, UserAccount } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface OrganisasiProps {
   managers: RTManager[];
@@ -27,7 +28,7 @@ export default function OrganisasiView({ managers, users }: OrganisasiProps) {
             Struktur Organisasi & Tata Kelola Pengguna
           </h1>
           <p className="text-slate-500 text-xs mt-1">
-            Lihat susunan pengurus RT 04 masa bakti 2024 - 2027 serta kelola pengaturan kewenangan akun pengendali web.
+            Lihat susunan pengurus RT {RTRW_CONTEXT.RT_PRIMARY} masa bakti 2024 - 2027 serta kelola pengaturan kewenangan akun pengendali web.
           </p>
         </div>
 
@@ -66,7 +67,7 @@ export default function OrganisasiView({ managers, users }: OrganisasiProps) {
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-emerald-550 to-teal-500 text-white rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-lg shadow-emerald-600/10 mb-2">
             <div className="relative z-10 max-w-xl space-y-2">
-              <span className="text-[10px] uppercase font-bold tracking-widest bg-white/20 text-white rounded-full px-3 py-1">Dewan Eksekutif RT 04</span>
+              <span className="text-[10px] uppercase font-bold tracking-widest bg-white/20 text-white rounded-full px-3 py-1">Komite Eksekutif RT {RTRW_CONTEXT.RT_PRIMARY} / RW {RTRW_CONTEXT.RW} {RTRW_CONTEXT.KELURAHAN}</span>
               <h2 className="font-display font-bold text-lg sm:text-2xl">Masa Bakti Kerja 2024 - 2027</h2>
               <p className="text-xs text-emerald-100 leading-relaxed font-light">
                 Seluruh pengurus dipilih secara musyawarah mufakat demi menjalankan program kerukunan warga, ketertiban ronda malam, transparansi kas bulanan, dan pelestarian lingkungan asri.
@@ -139,20 +140,20 @@ export default function OrganisasiView({ managers, users }: OrganisasiProps) {
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
-                          u.role === 'Superadmin' ? 'bg-indigo-50 text-indigo-750 font-extrabold border border-indigo-200' :
-                          u.role === 'Pengurus RT' ? 'bg-emerald-50 text-emerald-755 font-bold border border-emerald-200' :
+                          u.role === 'Superadmin' ? 'bg-indigo-50 text-indigo-700 font-extrabold border border-indigo-200' :
+                          u.role === 'Pengurus RT' ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-200' :
                           'bg-slate-100 text-slate-600'
                         }`}>
                           {u.role}
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="bg-emerald-50 text-emerald-750 text-[10px] font-semibold px-2 py-0.5 rounded flex items-center w-16 gap-0.5 border border-emerald-200 select-none">
+                        <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded flex items-center w-16 gap-0.5 border border-emerald-200 select-none">
                           <CheckCircle className="w-3.5 h-3.5" />
                           Aktif
                         </span>
                       </td>
-                      <td className="p-4 text-xs font-mono text-slate-450 font-medium">
+                      <td className="p-4 text-xs font-mono text-slate-500 font-medium">
                         {u.lastLogin || 'Belum berkunjung'}
                       </td>
                     </tr>

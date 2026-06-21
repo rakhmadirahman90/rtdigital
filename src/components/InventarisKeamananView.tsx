@@ -21,6 +21,7 @@ import {
   Lock
 } from 'lucide-react';
 import { InventoryItem, BorrowRequest, RondaSchedule, SecurityIncident, FeedbackSuggestion, Citizen } from '../types';
+import { RTRW_CONTEXT } from '../utils/constants';
 
 interface InventarisKeamananProps {
   inventory: InventoryItem[];
@@ -274,16 +275,16 @@ export default function InventarisKeamananView({
                             onClick={() => onUpdateBorrowStatus(b.id, 'Selesai')}
                             className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1 rounded-md text-[11px] flex items-center gap-1"
                           >
-                            <Lock className="w-3 h-3 text-slate-450" />
+                            <Lock className="w-3 h-3 text-slate-500" />
                             <span>Konfirmasi Kembali (Selesai)</span>
                           </button>
                         )}
 
                         {b.status === 'Selesai' && (
-                          <span className="bg-slate-50 text-slate-405 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-200">Returned</span>
+                          <span className="bg-slate-50 text-slate-500 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-200">Returned</span>
                         )}
                         {b.status === 'Ditolak' && (
-                          <span className="bg-rose-50 text-rose-550 text-[10px] font-semibold px-2 py-0.5 rounded border border-rose-200">Ditolak</span>
+                          <span className="bg-rose-50 text-rose-700 text-[10px] font-semibold px-2 py-0.5 rounded border border-rose-200">Ditolak</span>
                         )}
                       </div>
                     </div>
@@ -301,7 +302,7 @@ export default function InventarisKeamananView({
               Saling Pinjam Pinjam
             </h3>
             <p className="text-xs text-slate-550 leading-relaxed pt-2">
-              Barang inventaris adalah milik bersama warga RT 04. Peminjaman gratis khusus untuk kedukaan/arisan/hajatan. Warga dilarang menyewakan kembali aset-aset ini atau merusak barang tanpa ganti-rugi.
+              Barang inventaris adalah milik bersama warga RT {RTRW_CONTEXT.RT_PRIMARY}. Peminjaman gratis khusus untuk kedukaan/arisan/hajatan. Warga dilarang menyewakan kembali aset-aset ini atau merusak barang tanpa ganti-rugi.
             </p>
           </div>
         </div>
@@ -312,7 +313,7 @@ export default function InventarisKeamananView({
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 select-none">
-                <h3 className="font-display font-bold text-slate-900 text-sm">Pembagian Jadwal Ronda Malam RT 04</h3>
+                <h3 className="font-display font-bold text-slate-900 text-sm">Pembagian Jadwal Ronda Malam RT {RTRW_CONTEXT.RT_PRIMARY}</h3>
                 <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 rounded-full px-2.5 py-1">Shift 22:00 - 04:00 WIB</span>
               </div>
 
@@ -320,9 +321,9 @@ export default function InventarisKeamananView({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 font-sans text-xs">
                 {ronda.map(sched => {
                   return (
-                    <div key={sched.id} className="border border-slate-150 rounded-lg p-3 bg-slate-50/50 hover:bg-white transition-all space-y-2">
+                    <div key={sched.id} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 hover:bg-white transition-all space-y-2">
                       <div className="flex items-center justify-between border-b pb-1.5 border-slate-100">
-                        <span className="font-display font-bold text-slate-850 text-xs sm:text-sm">Hari {sched.day}</span>
+                        <span className="font-display font-bold text-slate-800 text-xs sm:text-sm">Hari {sched.day}</span>
                         <span className="text-[9px] text-slate-400 font-mono">Total: {sched.officers.length} org</span>
                       </div>
                       
@@ -382,7 +383,7 @@ export default function InventarisKeamananView({
                         <button
                           type="button"
                           onClick={() => onUpdateIncidentStatus(inc.id, 'Selesai')}
-                          className="bg-emerald-600 hover:bg-emerald-550 text-white text-[10px] font-bold px-2.5 py-1 rounded shrink-0 self-end sm:self-auto"
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded shrink-0 self-end sm:self-auto"
                         >
                           Selesaikan Investigasi
                         </button>
@@ -428,9 +429,9 @@ export default function InventarisKeamananView({
                     </div>
 
                     <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                      s.status === 'Belum Dibaca' ? 'bg-amber-100 text-amber-805 animate-pulse' :
-                      s.status === 'Ditinjau' ? 'bg-indigo-150 text-indigo-750' :
-                      'bg-slate-100 text-slate-455'
+                      s.status === 'Belum Dibaca' ? 'bg-amber-100 text-amber-700 animate-pulse' :
+                      s.status === 'Ditinjau' ? 'bg-indigo-100 text-indigo-700' :
+                      'bg-slate-100 text-slate-500'
                     }`}>
                       {s.status}
                     </span>
@@ -441,10 +442,10 @@ export default function InventarisKeamananView({
                   </p>
 
                   {s.reply ? (
-                    <div className="ml-6 pl-4 border-l-2 border-emerald-500 space-y-1 text-slate-650 text-xs">
+                    <div className="ml-6 pl-4 border-l-2 border-emerald-500 space-y-1 text-slate-600 text-xs">
                       <div className="flex items-center gap-1 font-bold text-emerald-800 text-[10px] uppercase font-display select-none">
                         <CornerDownRight className="w-3.5 h-3.5 mt-0.5" />
-                        Tanggapan Pengurus RT 04
+                        Tanggapan Pengurus RT {RTRW_CONTEXT.RT_PRIMARY}
                       </div>
                       <p className="italic text-slate-700 bg-slate-50 p-2 rounded">"{s.reply}"</p>
                     </div>
