@@ -69,17 +69,28 @@ import {
 } from './types';
 
 export default function App() {
-  // Navigation Role & view states
-  const [roleMode, setRoleMode] = useState<'warga' | 'admin'>('warga'); // Primary Router Mode selector
-  const [currentView, setCurrentView] = useState<string>('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  const [showLogin, setShowLogin] = useState<boolean>(false);
-
   // Authenticated User Session
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
     const cached = localStorage.getItem('rukunin_auth_user');
     return cached ? JSON.parse(cached) : null;
   });
+
+  // Navigation Role & view states
+  const [roleMode, setRoleMode] = useState<'warga' | 'admin'>(() => {
+    const cached = localStorage.getItem('rukunin_auth_user');
+    if (cached) {
+      try {
+        const user = JSON.parse(cached) as UserAccount;
+        return user.role === 'Warga' ? 'warga' : 'admin';
+      } catch (e) {
+        return 'warga';
+      }
+    }
+    return 'warga';
+  }); // Primary Router Mode selector
+  const [currentView, setCurrentView] = useState<string>('dashboard');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [showLogin, setShowLogin] = useState<boolean>(false);
 
   // React State variables - dynamically synced from Firestore db
   const [citizens, setCitizens] = useState<Citizen[]>([]);
@@ -566,7 +577,10 @@ export default function App() {
               role,
               isActive: true
             };
-            await saveDocument('users', newUser);
+            // Save in the background so registration/bootstrapping are instantaneous and immune to connection delays
+            saveDocument('users', newUser).catch(err => {
+              console.warn("Firestore save newUser background failed:", err);
+            });
             return newUser;
           }}
           onClose={() => setShowLogin(false)}

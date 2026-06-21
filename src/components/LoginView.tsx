@@ -84,10 +84,12 @@ export default function LoginView({ onLoginSuccess, users, onRegisterUser, onClo
           u => u.email.toLowerCase() === email.trim().toLowerCase()
         );
         if (fallbackUser) {
-          const registered = await onRegisterUser(fallbackUser.name, fallbackUser.email, fallbackUser.role);
-          if (registered) {
-            matchedUser = registered;
-          }
+          // Trigger registration in the background, but use fallbackUser immediately
+          // to ensure instantaneous and robust login experience without awaiting potential network hangs
+          onRegisterUser(fallbackUser.name, fallbackUser.email, fallbackUser.role).catch(err => {
+            console.error('Background auto-registration failed for fallback user:', err);
+          });
+          matchedUser = fallbackUser;
         }
       }
 
@@ -338,7 +340,7 @@ export default function LoginView({ onLoginSuccess, users, onRegisterUser, onClo
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-555 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10 transition cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10 transition cursor-pointer disabled:opacity-50"
                   >
                     {loading ? 'Memverifikasi...' : 'Masuk Aplikasi'}
                     <ArrowRight className="w-4 h-4" />
@@ -418,7 +420,7 @@ export default function LoginView({ onLoginSuccess, users, onRegisterUser, onClo
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-555 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10 transition cursor-pointer"
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10 transition cursor-pointer"
                   >
                     <UserPlus className="w-4 h-4" />
                     {loading ? 'Menghubungkan...' : 'Selesaikan & Buat Akun'}
